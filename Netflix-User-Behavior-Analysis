@@ -1,1 +1,97 @@
+# Import Libraries
+import pandas as pd
+import matplotlib.pyplot as plt
+import seaborn as sns
 
+# Style
+sns.set(style="whitegrid")
+
+# Load Dataset
+df = pd.read_csv("netflix_titles.csv")
+
+# ---------------------------
+# Data Cleaning
+# ---------------------------
+print("Missing Values:\n", df.isnull().sum())
+
+df['director'].fillna('Unknown', inplace=True)
+df['cast'].fillna('Unknown', inplace=True)
+df['country'].fillna('Unknown', inplace=True)
+df['rating'].fillna('Not Rated', inplace=True)
+
+# Convert date
+df['date_added'] = pd.to_datetime(df['date_added'], errors='coerce')
+df['year_added'] = df['date_added'].dt.year
+
+# ---------------------------
+# Basic Info
+# ---------------------------
+print("\nDataset Info:")
+print(df.info())
+
+print("\nFirst 5 Rows:")
+print(df.head())
+
+# ---------------------------
+# 1. Movies vs TV Shows
+# ---------------------------
+plt.figure()
+sns.countplot(x='type', data=df)
+plt.title("Movies vs TV Shows on Netflix")
+plt.xlabel("Type")
+plt.ylabel("Count")
+plt.show()
+
+# ---------------------------
+# 2. Top 10 Genres
+# ---------------------------
+df['listed_in'] = df['listed_in'].str.split(',')
+genre_df = df.explode('listed_in')
+
+genre_count = genre_df['listed_in'].value_counts().head(10)
+
+plt.figure()
+genre_count.plot(kind='bar')
+plt.title("Top 10 Genres on Netflix")
+plt.xlabel("Genre")
+plt.ylabel("Count")
+plt.xticks(rotation=45)
+plt.show()
+
+# ---------------------------
+# 3. Content Added Over Years
+# ---------------------------
+plt.figure()
+sns.countplot(x='year_added', data=df)
+plt.xticks(rotation=90)
+plt.title("Content Added Over Years")
+plt.show()
+
+# ---------------------------
+# 4. Ratings Distribution
+# ---------------------------
+plt.figure()
+sns.countplot(x='rating', data=df)
+plt.xticks(rotation=45)
+plt.title("Ratings Distribution")
+plt.show()
+
+# ---------------------------
+# 5. Top 10 Countries
+# ---------------------------
+country_count = df['country'].value_counts().head(10)
+
+plt.figure()
+country_count.plot(kind='bar')
+plt.title("Top 10 Countries Producing Content")
+plt.xlabel("Country")
+plt.ylabel("Count")
+plt.xticks(rotation=45)
+plt.show()
+
+# ---------------------------
+# Final Summary
+# ---------------------------
+print("\nTop Genre:\n", genre_count.head(1))
+print("\nTop Country:\n", country_count.head(1))
+print("\nMost Common Rating:\n", df['rating'].value_counts().head(1))
